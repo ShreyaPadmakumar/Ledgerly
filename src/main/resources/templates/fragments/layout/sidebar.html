@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<aside th:fragment="sidebar"
+       class="fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-surface-800 border-r border-gray-200/60 dark:border-gray-700/40 transition-all duration-300 ease-in-out"
+       :class="sidebarOpen ? 'w-64' : 'w-20'"
+       x-cloak>
+
+    <!-- Logo Area -->
+    <div class="flex items-center h-16 px-4 border-b border-gray-200/60 dark:border-gray-700/40">
+        <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/25 shrink-0">
+                <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+            </div>
+            <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                <h1 class="text-lg font-bold bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent whitespace-nowrap">Ledgerly</h1>
+                <p class="text-[10px] text-gray-400 font-medium tracking-wider uppercase whitespace-nowrap">Finance Tracker</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin">
+
+        <p x-show="sidebarOpen" class="px-3 mb-3 text-[10px] font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500">Menu</p>
+
+        <!-- Dashboard Link -->
+        <a th:href="@{/dashboard}"
+           class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+           th:classappend="${activePage == 'dashboard'} ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"
+               th:classappend="${activePage == 'dashboard'} ? 'text-brand-500' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'"></i>
+            <span x-show="sidebarOpen" class="whitespace-nowrap">Dashboard</span>
+        </a>
+
+        <!-- Expenses Link -->
+        <a th:href="@{/expenses}"
+           class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+           th:classappend="${activePage == 'expenses'} ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'">
+            <i data-lucide="receipt" class="w-5 h-5 shrink-0"
+               th:classappend="${activePage == 'expenses'} ? 'text-brand-500' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'"></i>
+            <span x-show="sidebarOpen" class="whitespace-nowrap">Expenses</span>
+        </a>
+
+        <div class="pt-4" x-show="sidebarOpen">
+            <p class="px-3 mb-3 text-[10px] font-semibold tracking-widest uppercase text-gray-400 dark:text-gray-500">Analytics</p>
+        </div>
+
+        <!-- Analytics Link -->
+        <a th:href="@{/dashboard}"
+           class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 shrink-0 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"></i>
+            <span x-show="sidebarOpen" class="whitespace-nowrap">Analytics</span>
+        </a>
+
+        <!-- Reports Link -->
+        <a href="#"
+           class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200">
+            <i data-lucide="file-text" class="w-5 h-5 shrink-0 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"></i>
+            <span x-show="sidebarOpen" class="whitespace-nowrap">Reports</span>
+            <span x-show="sidebarOpen" class="ml-auto px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">Soon</span>
+        </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="p-3 border-t border-gray-200/60 dark:border-gray-700/40">
+        <!-- Collapse Toggle -->
+        <button @click="sidebarOpen = !sidebarOpen"
+                class="hidden lg:flex w-full items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+            <i data-lucide="panel-left-close" class="w-4 h-4 transition-transform duration-300" :class="!sidebarOpen && 'rotate-180'"></i>
+            <span x-show="sidebarOpen" class="whitespace-nowrap">Collapse</span>
+        </button>
+    </div>
+</aside>
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/master}" lang="en">
+<head><title>Expenses</title></head>
+<body>
+<div layout:fragment="content" x-data="expenseManager()">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 animate-fade-in">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white">All Expenses</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"><span th:text="${totalItems}">0</span> total entries</p>
+        </div>
+        <button @click="showAdd = true"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/25 transition-all duration-200 hover:shadow-brand-500/40 hover:-translate-y-0.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Expense
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-surface-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 p-4 mb-6 animate-slide-up" style="animation-delay:.05s">
+        <form th:action="@{/expenses}" method="get" class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                <input type="text" name="keyword" th:value="${searchKeyword}" placeholder="Search by note or category..."
+                       class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all">
+            </div>
+            <select name="category"
+                    class="px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all">
+                <option value="">All Categories</option>
+                <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.displayName}" th:selected="${cat.name() == selectedCategory}"></option>
+            </select>
+            <select name="month"
+                    class="px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all">
+                <option value="">All Months</option>
+                <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                <option value="12" th:selected="${selectedMonth == 12}">December</option>
+            </select>
+            <div class="flex gap-2">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-all">
+                    <i data-lucide="filter" class="w-4 h-4 inline -mt-0.5"></i> Filter
+                </button>
+                <a th:href="@{/expenses}" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div th:if="${expenses.size() > 0}" class="bg-white dark:bg-surface-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-sm overflow-hidden animate-slide-up" style="animation-delay:.1s">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-gray-700/40">
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-4">Category</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-4">Note</th>
+                        <th class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-4">Date</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-4">Amount</th>
+                        <th class="text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-6 py-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="expense, iter : ${expenses}"
+                        class="border-b border-gray-50 dark:border-gray-700/20 hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition-colors duration-150">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold"
+                                     th:style="'background-color:' + ${categoryColors[expense.category]} + '15; color:' + ${categoryColors[expense.category]}">
+                                    <i th:data-lucide="${categoryIcons[expense.category]}" class="w-4 h-4"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                                      th:text="${categoryDisplayNames[expense.category]}">Category</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate block" th:text="${expense.note} ?: '—'">Note</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-gray-600 dark:text-gray-400" th:text="${#temporals.format(expense.expenseDate, 'dd MMM yyyy')}">Date</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">₹<span th:text="${#numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <button @click="openEdit(expense)" th:data-id="${expense.id}" th:data-amount="${expense.amount}" th:data-category="${expense.category}" th:data-note="${expense.note}" th:data-date="${expense.expenseDate}"
+                                        class="p-2 rounded-lg text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-all" title="Edit">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button @click="openDelete(expense)" th:data-id="${expense.id}" th:data-category="${categoryDisplayNames[expense.category]}" th:data-amount="${expense.amount}"
+                                        class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all" title="Delete">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-gray-700/40">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Showing page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span>
+            </p>
+            <div class="flex gap-1.5">
+                <a th:if="${currentPage > 0}" th:href="@{/expenses(page=${currentPage - 1}, category=${selectedCategory}, month=${selectedMonth}, year=${selectedYear}, keyword=${searchKeyword})}"
+                   class="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">
+                    <i data-lucide="chevron-left" class="w-4 h-4 inline -mt-0.5"></i> Prev
+                </a>
+                <a th:if="${currentPage + 1 < totalPages}" th:href="@{/expenses(page=${currentPage + 1}, category=${selectedCategory}, month=${selectedMonth}, year=${selectedYear}, keyword=${searchKeyword})}"
+                   class="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">
+                    Next <i data-lucide="chevron-right" class="w-4 h-4 inline -mt-0.5"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${expenses.size() == 0}" class="bg-white dark:bg-surface-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-sm animate-slide-up">
+        <div class="flex flex-col items-center justify-center py-20 text-center px-6">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-50 to-purple-50 dark:from-brand-500/10 dark:to-purple-500/10 flex items-center justify-center mb-5">
+                <i data-lucide="receipt" class="w-10 h-10 text-brand-300 dark:text-brand-600"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No expenses yet</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">Start tracking your spending to take control of your finances. Every rupee counts!</p>
+            <button @click="showAdd = true"
+                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/25 transition-all duration-200">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Your First Expense
+            </button>
+        </div>
+    </div>
+
+    <!-- ADD EXPENSE MODAL -->
+    <div x-show="showAdd" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showAdd = false">
+        <div x-show="showAdd" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="showAdd = false" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div x-show="showAdd" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+             class="relative w-full max-w-md bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+            <div class="flex items-center justify-between p-6 pb-0">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Expense</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Track a new expense</p>
+                </div>
+                <button @click="showAdd = false" class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form th:action="@{/expenses/save}" method="post" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount (₹) *</label>
+                    <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00"
+                           class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white placeholder-gray-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category *</label>
+                    <select name="category" required class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white">
+                        <option value="">Select category</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.displayName}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Date *</label>
+                    <input type="date" name="expenseDate" required
+                           class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Note</label>
+                    <textarea name="note" rows="2" placeholder="What was this expense for?" maxlength="500"
+                              class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white placeholder-gray-400 resize-none"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" @click="showAdd = false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/25 transition-all">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT EXPENSE MODAL -->
+    <div x-show="showEdit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showEdit = false">
+        <div x-show="showEdit" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="showEdit = false" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div x-show="showEdit" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+             class="relative w-full max-w-md bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+            <div class="flex items-center justify-between p-6 pb-0">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Expense</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Update expense details</p>
+                </div>
+                <button @click="showEdit = false" class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form :action="'/expenses/update/' + editId" method="post" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount (₹) *</label>
+                    <input type="number" name="amount" step="0.01" min="0.01" required x-model="editAmount"
+                           class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category *</label>
+                    <select name="category" required x-model="editCategory" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white">
+                        <option value="">Select category</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.displayName}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Date *</label>
+                    <input type="date" name="expenseDate" required x-model="editDate"
+                           class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Note</label>
+                    <textarea name="note" rows="2" maxlength="500" x-model="editNote"
+                              class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-gray-900 dark:text-white resize-none"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" @click="showEdit = false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/25 transition-all">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRM MODAL -->
+    <div x-show="showDelete" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.escape.window="showDelete = false">
+        <div x-show="showDelete" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" @click="showDelete = false" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div x-show="showDelete" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+             class="relative w-full max-w-sm bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/40 p-6 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-7 h-7 text-red-500"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete Expense?</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Are you sure you want to delete <strong x-text="deleteCategory" class="text-gray-900 dark:text-white"></strong>
+                expense of <strong class="text-gray-900 dark:text-white">₹<span x-text="deleteAmount"></span></strong>? This cannot be undone.
+            </p>
+            <div class="flex gap-3">
+                <button @click="showDelete = false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">Cancel</button>
+                <form :action="'/expenses/delete/' + deleteId" method="post" class="flex-1">
+                    <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 shadow-lg shadow-red-500/25 transition-all">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script layout:fragment="scripts" th:inline="javascript">
+function expenseManager() {
+    return {
+        showAdd: /*[[${showAddModal}]]*/ false,
+        showEdit: /*[[${showEditModal}]]*/ false,
+        showDelete: false,
+        editId: '', editAmount: '', editCategory: '', editNote: '', editDate: '',
+        deleteId: '', deleteCategory: '', deleteAmount: '',
+        init() {
+            const editData = /*[[${editExpenseDTO}]]*/ null;
+            if (editData) {
+                this.editId = editData.id;
+                this.editAmount = editData.amount;
+                this.editCategory = editData.category;
+                this.editNote = editData.note || '';
+                this.editDate = editData.expenseDate;
+                this.showEdit = true;
+            }
+            this.$nextTick(() => lucide.createIcons());
+        },
+        openEdit(el) {
+            const btn = el.target ? el.target.closest('button') : el;
+            this.editId = btn.dataset.id;
+            this.editAmount = btn.dataset.amount;
+            this.editCategory = btn.dataset.category;
+            this.editNote = btn.dataset.note || '';
+            this.editDate = btn.dataset.date;
+            this.showEdit = true;
+            this.$nextTick(() => lucide.createIcons());
+        },
+        openDelete(el) {
+            const btn = el.target ? el.target.closest('button') : el;
+            this.deleteId = btn.dataset.id;
+            this.deleteCategory = btn.dataset.category;
+            this.deleteAmount = btn.dataset.amount;
+            this.showDelete = true;
+            this.$nextTick(() => lucide.createIcons());
+        }
+    };
+}
+</script>
+</body>
+</html>

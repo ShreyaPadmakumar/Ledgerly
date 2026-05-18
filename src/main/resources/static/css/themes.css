@@ -1,0 +1,61 @@
+/* ===========================
+   Ledgerly — Theme Overrides
+   =========================== */
+
+/* Dark mode transitions */
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card hover glow — light mode */
+.group:hover {
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* Card hover glow — dark mode */
+.dark .group:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* Sidebar active indicator */
+.sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(to bottom, #6366F1, #818CF8);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Chart tooltip custom styling */
+.chartjs-tooltip {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Form input dark mode placeholder */
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: rgba(156, 163, 175, 0.6);
+}
+
+/* Gradient text utility */
+.text-gradient {
+    background: linear-gradient(135deg, #6366F1, #818CF8, #A78BFA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glass card effect */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.dark .glass {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
